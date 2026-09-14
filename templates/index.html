@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}首页 - 在线考试系统{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12 text-center mb-4">
+        <h3>欢迎进入{{ current_user.role }}控制台</h3>
+    </div>
+
+    {% if current_user.role == 'admin' %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title text-primary">班级管理</h5>
+                <p class="card-text">添加/管理学生班级</p>
+                <a href="/admin/class" class="btn btn-primary">进入管理</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title text-success">科目管理</h5>
+                <p class="card-text">添加/管理考试科目</p>
+                <a href="/admin/subject" class="btn btn-success">进入管理</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <h5 class="card-title text-info">试题管理</h5>
+                <p class="card-text">添加/编辑/导入试题</p>
+                <a href="/admin/question" class="btn btn-info">进入管理</a>
+            </div>
+        </div>
+    </div>
+
+    {% elif current_user.role == 'teacher' %}
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5>科目成绩查看</h5>
+            </div>
+            <div class="card-body">
+                {% if subjects %}
+                <div class="row">
+                    {% for sub in subjects %}
+                    <div class="col-md-4 mb-3">
+                        <a href="/teacher/score/{{ sub.id }}" class="btn btn-success w-100">{{ sub.name }} - 成绩统计</a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center">暂无科目，请联系管理员添加！</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% elif current_user.role == 'student' %}
+    {% if not current_user.class_id %}
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm border-warning">
+            <div class="card-header bg-warning text-white">
+                <h5>请选择班级</h5>
+            </div>
+            <div class="card-body">
+                {% if classes %}
+                <div class="row">
+                    {% for cls in classes %}
+                    <div class="col-md-4 mb-3">
+                        <a href="/student/choose_class/{{ cls.id }}" class="btn btn-warning w-100">{{ cls.name }}</a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center">暂无班级，请联系管理员添加！</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if current_user.class_id %}
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-white">
+                <h5>考试科目列表（当前班级：{{ get_classname(current_user.class_id) }}）</h5>
+            </div>
+            <div class="card-body">
+                {% if subjects %}
+                <div class="row">
+                    {% for sub in subjects %}
+                    <div class="col-md-4 mb-3">
+                        <a href="/student/exam/{{ sub.id }}" class="btn btn-warning w-100">进入{{ sub.name }}考试（{{ sub.exam_duration }}分钟）</a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center">暂无考试科目，请联系老师！</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

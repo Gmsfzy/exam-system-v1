@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ subject.name }} - 考试答题{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">{{ subject.name }} - 在线考试</h4>
+        <div class="h5 mb-0 text-white" id="countdown">考试剩余时间：<span id="timer">00:00:00</span></div>
+    </div>
+    <div class="card-body">
+        <form method="post" action="/student/submit" id="examForm">
+            <input type="hidden" name="subject_id" value="{{ subject.id }}">
+            {% for q in questions %}
+            <div class="border p-3 mb-4 rounded">
+                <h5>
+                    {{ loop.index }}. {{ q.title }}
+                    <span class="badge bg-secondary ms-2">
+                        {% if q.question_type == 'single' %}单选{% elif q.question_type == 'multiple' %}多选{% else %}判断{% endif %}
+                    </span>
+                    <span class="badge bg-primary ms-1">{{ q.score }}分</span>
+                </h5>
+
+                {% if q.question_type == 'judge' %}
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}_t" value="True" required>
+                    <label class="form-check-label" for="q{{ q.id }}_t">正确</label>
+                </div>
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}_f" value="False" required>
+                    <label class="form-check-label" for="q{{ q.id }}_f">错误</label>
+                </div>
+
+                {% elif q.question_type == 'single' %}
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}_a" value="A" required>
+                    <label class="form-check-label" for="q{{ q.id }}_a">A. {{ q.option_a }}</label>
+                </div>
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}_b" value="B">
+                    <label class="form-check-label" for="q{{ q.id }}_b">B. {{ q.option_b }}</label>
+                </div>
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}_c" value="C">
+                    <label class="form-check-label" for="q{{ q.id }}_c">C. {{ q.option_c }}</label>
+                </div>
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q{{ q.id }}_d" value="D">
+                    <label class="form-check-label" for="q{{ q.id }}_d">D. {{ q.option_d }}</label>
+                </div>
+
+                {% else %}
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" name="q_{{ q.id }}" id="q{{ q.id }}_a" value="A">
+                    <label class="form-check-label" for="q{{ q.id }}_a">A. {{ q.option_a }}</label>
+                </div>
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="checkbox" name="q_{{ q.id }}" id="q{{ q.id }}_b" value="B">
+                    <label class="form-check-label" for="q{{ q.id }}_b">B. {{ q.option_b }}</label>
+                </div>
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="checkbox" name="q_{{ q.id }}" id="q{{ q.id }}_c" value="C">
+                    <label class="form-check-label" for="q{{ q.id }}_c">C. {{ q.option_c }}</label>
+                </div>
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="checkbox" name="q_{{ q.id }}" id="q{{ q.id }}_d" value="D">
+                    <label class="form-check-label" for="q{{ q.id }}_d">D. {{ q.option_d }}</label>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-success w-100">提交试卷</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+// 考试结束时间
+const endTime = new Date("{{ end_time }}").getTime();
+const countdownEl = document.getElementById('countdown');
+const timerEl = document.getElementById('timer');
+const examForm = document.getElementById('examForm');
+
+// 倒计时函数
+function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = endTime - now;
+
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    // 格式化时间
+    timerEl.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    // 时间到
+    if (distance < 0) {
+        clearInterval(timerInterval);
+        countdownEl.innerHTML = '<span class="text-danger">考试时间已到！</span>';
+        autoSubmit();
+    } else if (distance < 60000) {
+        // 最后1分钟变红
+        timerEl.classList.add('text-danger');
+    }
+}
+
+// 自动提交
+function autoSubmit() {
+    // 获取所有已选答案
+    const answers = {};
+    document.querySelectorAll('input[name^="q_"]:checked').forEach(input => {
+        if (input.type === 'radio') {
+            answers[input.name] = input.value;
+        } else if (input.type === 'checkbox') {
+            if (!answers[input.name]) answers[input.name] = '';
+            answers[input.name] += input.value;
+        }
+    });
+
+    // 发送请求
+    fetch('/student/auto_submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            subject_id: {{ subject.id }},
+            answers: answers
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(`考试时间到，已自动提交！你的得分：${data.score}`);
+            window.location.href = '/';
+        }
+    });
+}
+
+// 每秒更新倒计时
+const timerInterval = setInterval(updateCountdown, 1000);
+updateCountdown();
+</script>
+{% endblock %}

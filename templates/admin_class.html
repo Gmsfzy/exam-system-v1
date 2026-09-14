@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}班级管理 - 在线考试系统{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4>班级管理</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" class="mb-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <input type="text" name="name" class="form-control" placeholder="输入班级名称，如：高一(1)班" required>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-success w-100">添加班级</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>班级名称</th>
+                        <th>学生人数</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cls in classes %}
+                    <tr>
+                        <td>{{ cls.id }}</td>
+                        <td>{{ cls.name }}</td>
+                        <td>{{ cls.students|length }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ cls.id }}">删除</button>
+
+                            <!-- 删除确认弹窗 -->
+                            <div class="modal fade" id="deleteModal{{ cls.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title">确认删除班级</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            确定要删除班级 <strong>{{ cls.name }}</strong> 吗？<br>
+                                            该班级的学生将被解除班级关系！
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                            <form action="/admin/class/delete/{{ cls.id }}" method="post">
+                                                <button type="submit" class="btn btn-danger">确认删除</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">暂无班级，请添加</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <a href="/" class="btn btn-primary">返回首页</a>
+    </div>
+</div>
+{% endblock %}

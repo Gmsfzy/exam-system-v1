@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ subject.name }} - 成绩排名{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-info text-white">
+        <h4>{{ subject.name }} - 成绩统计</h4>
+    </div>
+    <div class="card-body">
+        <!-- 班级筛选 -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <form method="get" class="row g-2">
+                    <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                    <div class="col-md-8">
+                        <select name="class_id" class="form-select" onchange="this.form.submit()">
+                            <option value="">全部班级</option>
+                            {% for cls in classes %}
+                            <option value="{{ cls.id }}" {% if selected_class == cls.id %}selected{% endif %}>{{ cls.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">筛选</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ url_for('export_score', subject_id=subject.id, class_id=selected_class) }}" class="btn btn-success w-100">
+                    导出Excel成绩表
+                </a>
+            </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="alert alert-light border text-center">
+                    <h5 class="mb-0">答题人数</h5>
+                    <h3 class="text-primary">{{ count }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="alert alert-light border text-center">
+                    <h5 class="mb-0">最高分</h5>
+                    <h3 class="text-success">{{ max_score }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="alert alert-light border text-center">
+                    <h5 class="mb-0">平均分</h5>
+                    <h3 class="text-warning">{{ avg_score }}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="alert alert-light border text-center">
+                    <h5 class="mb-0">当前筛选</h5>
+                    <h3 class="text-secondary">{{ selected_class and get_classname(selected_class) or '全部班级' }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- 成绩表格 -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>排名</th>
+                        <th>学生姓名</th>
+                        <th>班级</th>
+                        <th>得分</th>
+                        <th>考试时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in scores %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ get_username(s.student_id) }}</td>
+                        <td>{{ get_classname(User.query.get(s.student_id).class_id) }}</td>
+                        <td>{{ s.total_score }}</td>
+                        <td>{{ s.create_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">暂无成绩数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <a href="/" class="btn btn-primary">返回首页</a>
+    </div>
+</div>
+{% endblock %}

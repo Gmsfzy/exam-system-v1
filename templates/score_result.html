@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}考试成绩 - 在线考试系统{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card text-center shadow-lg border-success">
+            <div class="card-header bg-success text-white">
+                <h3>考试完成！</h3>
+            </div>
+            <div class="card-body">
+                <h4 class="card-title">{{ subject.name }}</h4>
+                <p class="lead">你的得分：</p>
+                <h1 class="display-4 text-success">{{ score }}</h1>
+                {% set total = questions|sum(attribute='score') %}
+                <p class="text-muted">总分：{{ total }}分</p>
+                <p class="text-muted">正确率：{{ (score/total*100)|round(2) }}%</p>
+            </div>
+            <div class="card-footer">
+                <a href="/" class="btn btn-primary">返回首页</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

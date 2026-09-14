@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}用户登录 - 在线考试系统{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header text-center bg-primary text-white">
+                <h4>用户登录</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" name="username" class="form-control" placeholder="输入用户名" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">密码</label>
+                        <input type="password" name="password" class="form-control" placeholder="输入密码" required>
+                    </div>
+<!--                    <div class="text-center text-muted mb-3">-->
+<!--                        默认账号：admin/teacher/student<br>-->
+<!--                        默认密码：123456-->
+<!--                    </div>-->
+                    <button type="submit" class="btn btn-primary w-100">登录系统</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
